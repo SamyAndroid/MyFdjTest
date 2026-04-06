@@ -3,6 +3,7 @@ package com.rdissi.myfdjtest.ui.content
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rdissi.myfdjtest.common.Result
+import com.rdissi.myfdjtest.common.handle
 import com.rdissi.myfdjtest.domain.model.League
 import com.rdissi.myfdjtest.domain.model.Team
 import com.rdissi.myfdjtest.domain.usecase.GetLeaguesUseCase
@@ -31,44 +32,22 @@ constructor(
         val leagues: List<League> = emptyList(),
         val teams: List<Team> = emptyList(),
         val error: String? = null,
-        val hasRequestedLeagues: Boolean = false,
     )
 
     fun getAllLeagues() {
         getLeaguesUseCase()
             .onEach { result ->
-                when (result) {
-                    is Result.Loading -> {
-                        _uiState.update {
-                            it.copy(
-                                isLoading = true,
-                                error = null,
-                                hasRequestedLeagues = true,
-                            )
-                        }
+                result.handle(
+                    onLoading = {
+                        _uiState.update { it.copy(isLoading = true, error = null) }
+                    },
+                    onSuccess = { data ->
+                        _uiState.update { it.copy(leagues = data, isLoading = false, error = null) }
+                    },
+                    onError = { message ->
+                        _uiState.update { it.copy(error = message, isLoading = false) }
                     }
-
-                    is Result.Success -> {
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                leagues = result.data,
-                                error = null,
-                                hasRequestedLeagues = false,
-                            )
-                        }
-                    }
-
-                    is Result.Error -> {
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                error = result.message,
-                                hasRequestedLeagues = false,
-                            )
-                        }
-                    }
-                }
+                )
             }.launchIn(viewModelScope)
     }
 
@@ -76,36 +55,21 @@ constructor(
         getTeamsUseCase
             .getTeamByLeagueName(leagueName)
             .onEach { result ->
-                when (result) {
-                    is Result.Loading -> {
-                        _uiState.update {
-                            it.copy(isLoading = true, error = null)
-                        }
+                result.handle(
+                    onLoading = {
+                        _uiState.update { it.copy(isLoading = true, error = null) }
+                    },
+                    onSuccess = { data ->
+                        _uiState.update { it.copy(teams = data, isLoading = false, error = null) }
+                    },
+                    onError = { message ->
+                        _uiState.update { it.copy(error = message, isLoading = false) }
                     }
-
-                    is Result.Success -> {
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                teams = result.data,
-                                error = null,
-                            )
-                        }
-                    }
-
-                    is Result.Error -> {
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                error = result.message,
-                            )
-                        }
-                    }
-                }
+                )
             }.launchIn(viewModelScope)
     }
 
-    fun cancel() {
+    fun cancelSearch() {
         _uiState.update {
             it.copy(
                 isLoading = false,
@@ -116,25 +80,26 @@ constructor(
         }
     }
 
+    // API call only on the first input
+    // to avoid triggering a request on every keystroke
     fun onQueryChange(query: String) {
         _uiState.update {
-            if (query.isNotBlank()) {
-                it.copy(query = query)
-            } else {
+            it.copy(
+                query = query,
+            )
+        }
+        val state = _uiState.value
+        if (query.isBlank()) {
+            _uiState.update {
                 it.copy(
-                    query = query,
-                    isLoading = false,
                     leagues = emptyList(),
                     teams = emptyList(),
-                    error = null,
+                    isLoading = false
                 )
             }
+            return
         }
-        if (
-            uiState.value.leagues.isEmpty() &&
-            query.isNotBlank() &&
-            !uiState.value.hasRequestedLeagues
-        ) {
+        if (state.leagues.isEmpty() && !state.isLoading) {
             getAllLeagues()
         }
     }

@@ -38,7 +38,7 @@ fun ContentPage(
             contentViewModel.onQueryChange(query)
         },
         onCancelSearch = {
-            contentViewModel.cancel()
+            contentViewModel.cancelSearch()
         },
         onLeagueSelected = { league ->
             contentViewModel.getTeamsByLeague(league.name)

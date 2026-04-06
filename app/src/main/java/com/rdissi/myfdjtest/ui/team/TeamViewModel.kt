@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.rdissi.myfdjtest.common.Result
 import com.rdissi.myfdjtest.domain.model.Team
@@ -52,4 +51,5 @@ class TeamViewModel @Inject constructor(
             }
         }.launchIn(viewModelScope)
     }
+
 }

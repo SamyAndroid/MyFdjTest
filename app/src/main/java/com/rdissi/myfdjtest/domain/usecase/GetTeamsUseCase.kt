@@ -7,6 +7,7 @@ import com.rdissi.myfdjtest.domain.model.TeamsResponse
 import com.rdissi.myfdjtest.domain.model.filterOneOutOfTwo
 import com.rdissi.myfdjtest.domain.model.sortedByDescending
 import com.rdissi.myfdjtest.domain.repository.TeamsRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
@@ -31,6 +32,7 @@ class GetTeamsUseCase @Inject constructor(
     fun getTeamById(teamId: String): Flow<Result<Team>> = flow {
         emit(Result.Loading)
         runCatching {
+            delay(2000L) // To see the Loading progress bar.
             val team: Team = teamsRepository.getTeamById(teamId) ?: throw Exception("Team null")
             team
         }.onSuccess { team ->

@@ -13,7 +13,7 @@ class MainViewModel @Inject constructor() : ViewModel() {
         val sendIntent: Intent = Intent().apply {
             action = Intent.ACTION_SEND
             type = "text/plain"
-            putExtra(Intent.EXTRA_TEXT, "https://github.com/SamyAndroid/MyTest")
+            putExtra(Intent.EXTRA_TEXT, "https://github.com/SamyAndroid/MyFdjTest")
             putExtra(Intent.EXTRA_SUBJECT, "MyTest")
             putExtra(Intent.EXTRA_TITLE, "MyTest on GitHub")
         }
